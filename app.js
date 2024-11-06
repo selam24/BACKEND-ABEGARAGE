@@ -16,3 +16,20 @@ app.use(express.json());
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+
+
+// app.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const employeeRoutes = require('./routes/employeeRoutes');
+
+
+app.use(bodyParser.json());
+
+// Routes
+app.use(employeeRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
