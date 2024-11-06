@@ -1,6 +1,5 @@
 // controllers/employeeController.js
-// to handle the logic for registering a new employee in the system
-const employeeService = require("../services/employee.service"); // Import the employee service to handle business logic
+const employeeService = require("../services/employeeService"); // Import the employee service to handle business logic
 const validator = require("validator"); // Import validator for input sanitization
 
 // Define the registerEmployee function as an async function
@@ -14,14 +13,10 @@ exports.registerEmployee = async (req, res) => {
     active_employee,
     // Uncomment below if position and role are needed in future
     // employee_position,
-    employee_role,
+    // employee_role
   } = req.body;
 
   // Input sanitization
-  // Sanitize and validate input data
-  // Sanitizing: Uses validator to escape harmful characters (like <>, etc.) from inputs that could lead to cross-site scripting (XSS) attacks. Specifically:escape: Removes harmful characters from first_name, last_name, and phone.
-  // normalizeEmail: Adjusts email to a standard format.
-  // The active_status field defaults to 1 (active) if active_employee isn’t provided.
   const sanitizedData = {
     first_name: validator.escape(employee_first_name),
     last_name: validator.escape(employee_last_name),
@@ -31,7 +26,7 @@ exports.registerEmployee = async (req, res) => {
     active_status: active_employee !== undefined ? active_employee : 1, // Default to active (1) if not provided
     // Uncomment below if position and role are needed in future
     // position: employee_position,
-    role: employee_role,
+    // role: employee_role,
   };
 
   // Validation: Ensure all required fields are provided
@@ -40,10 +35,10 @@ exports.registerEmployee = async (req, res) => {
     !sanitizedData.last_name ||
     !sanitizedData.phone ||
     !sanitizedData.email ||
-    !sanitizedData.password ||
+    !sanitizedData.password
     // Uncomment below if position and role are required
     // !sanitizedData.position ||
-    !sanitizedData.role
+    // !sanitizedData.role
   ) {
     return res.status(400).json({
       error: "Bad Request",
@@ -53,12 +48,9 @@ exports.registerEmployee = async (req, res) => {
 
   try {
     // Call the service to register the employee
-    // employeeService.registerEmployee: This function in employeeService handles the actual database operations, such as saving the employee’s data.
     const result = await employeeService.registerEmployee(sanitizedData);
 
     // Prepare response data (excluding sensitive info like password)
-    // Response Data: Once the service successfully registers the employee, the code creates a responseData object with essential information (but omits the password for security).
-    // Assumes the service function returns an object with an insertId, representing the employee’s new database ID.
     const responseData = {
       id: result.insertId, // Assuming 'insertId' contains the new employee's ID from MySQL
       first_name: sanitizedData.first_name,
@@ -68,7 +60,7 @@ exports.registerEmployee = async (req, res) => {
       active_status: sanitizedData.active_status, // Include active status in response
       // Uncomment below if position and role are needed in future
       // position: sanitizedData.position,
-      role: "employee", // Assuming a default role of 'employee' is assigned
+      // role: "employee", // Assuming a default role of 'employee' is assigned
     };
 
     res.status(201).json({

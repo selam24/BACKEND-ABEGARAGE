@@ -1,23 +1,18 @@
 // services/employeeService.js
-// A service module that handles business logic (like interacting with the database) related to employees.
-const db = require("../config/db.config");
+const db = require("../db/connection");
 const bcrypt = require("bcrypt");
 const validator = require("validator"); // For input sanitization
 const DEFAULT_ROLE = "employee"; // Default role assignment
 
 exports.registerEmployee = async (employeeData) => {
   // Sanitize and validate input data
-  // Sanitizing: Uses validator to escape harmful characters (like <>, etc.) from inputs that could lead to cross-site scripting (XSS) attacks. Specifically:escape: Removes harmful characters from first_name, last_name, and phone.
-  // normalizeEmail: Adjusts email to a standard format.
-  // The active_status field defaults to 1 (active) if active_employee isn’t provided.
-
   const sanitizedData = {
     firstName: validator.escape(employeeData.employee_first_name),
     lastName: validator.escape(employeeData.employee_last_name),
     phone: validator.escape(employeeData.employee_phone),
     email: validator.normalizeEmail(employeeData.employee_email),
     password: employeeData.employee_password, // Password is hashed, so not sanitized
-    // position: validator.escape(employeeData.employee_position), // Add position with sanitization
+    position: validator.escape(employeeData.employee_position), // Add position with sanitization
     active: employeeData.active_employee || 1, // Default status is 1 (active)
   };
 
@@ -27,8 +22,8 @@ exports.registerEmployee = async (employeeData) => {
     !sanitizedData.lastName ||
     !sanitizedData.phone ||
     !sanitizedData.email ||
-    !sanitizedData.password 
-    // !sanitizedData.position // Check for position as well
+    !sanitizedData.password ||
+    !sanitizedData.position // Check for position as well
   ) {
     const error = new Error("Please provide all required fields");
     error.statusCode = 400;
@@ -66,17 +61,12 @@ exports.registerEmployee = async (employeeData) => {
       sanitizedData.phone,
       sanitizedData.email,
       hashedPassword,
-      // sanitizedData.position, // Include position in the query
+      sanitizedData.position, // Include position in the query
       sanitizedData.active,
       DEFAULT_ROLE,
     ];
 
     // Execute the query and return a promise with the result
-    // Executes the SQL query using the db.query method.
-    // If successful, it resolves the promise with a success message and response data, including:
-    // id: The unique identifier (ID) of the newly created employee.
-    // Other Employee Details: Excludes sensitive info like the hashed password but includes firstName, lastName, phone, etc.
-    // If an error occurs, it rejects the promise, which will be caught in the controller and handled there.
     return new Promise((resolve, reject) => {
       db.query(query, values, (err, result) => {
         if (err) {
@@ -91,7 +81,7 @@ exports.registerEmployee = async (employeeData) => {
               lastName: sanitizedData.lastName,
               phone: sanitizedData.phone,
               email: sanitizedData.email,
-              // position: sanitizedData.position, // Include position in the response data
+              position: sanitizedData.position, // Include position in the response data
               active_status: sanitizedData.active,
             },
           });

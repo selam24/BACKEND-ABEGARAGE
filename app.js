@@ -1,35 +1,37 @@
-//Import the express module
-const express = require('express');
-//Import the dotenv module and call the config method
-require('dotenv').config();
-//Import the cors module
-const cors = require('cors');
-//Create a variable to store the port number
-const PORT = process.env.PORT;
-//Create the web server 
+// Import the express module
+const express = require("express");
+// Import the dotenv module and call the config method
+require("dotenv").config();
+// Import the cors module
+const cors = require("cors");
+
+// Create a variable to store the port number
+const PORT = process.env.PORT || 3000;
+
+// Create the web server
 const app = express();
-//Use the cors middleware
+
+// Use the cors middleware
 app.use(cors());
-//Use the express.json middleware to parse JSON requests
+
+// Use the express.json middleware to parse JSON requests
 app.use(express.json());
-//Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+// Import routes
+const employeeRoutes = require("./routes/employee.routes");
+
+// Use routes with a prefix (if needed)
+app.use("/api", employeeRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
-
-
-// app.js
-const express = require('express');
-const bodyParser = require('body-parser');
-const employeeRoutes = require('./routes/employeeRoutes');
-
-
-app.use(bodyParser.json());
-
-// Routes
-app.use(employeeRoutes);
-
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = app;

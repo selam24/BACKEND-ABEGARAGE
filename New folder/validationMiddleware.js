@@ -1,15 +1,7 @@
 // middleware/validationMiddleware.js
-// body: Used to specify validation rules for individual fields in the request body.
-// validationResult: Collects and checks the results of the validation to see if any rules were violated.
 const { body, validationResult } = require("express-validator");
 
 // Define validation rules for employee registration
-// employee_first_name and employee_last_name: Checks that these fields are not empty.
-// employee_phone: Validates that the phone number is provided and is in a valid mobile phone format.
-// employee_email: Ensures that the email is in a correct email format.
-// employee_password: Requires the password to be at least 6 characters long.
-// active_employee: Optional field; if present, it must be an integer with a value of either 0 or 1.
-
 const validateEmployeeRegistration = [
   body("employee_first_name").notEmpty().withMessage("First name is required"),
   body("employee_last_name").notEmpty().withMessage("Last name is required"),
