@@ -16,8 +16,9 @@ const validateEmployeeRegistration = [
   body("employee_phone")
     .notEmpty()
     .withMessage("Phone number is required")
-    .isMobilePhone()
+    .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/) // Allows formats like 123-456-7890 or (123) 456-7890
     .withMessage("Please enter a valid phone number"),
+
   body("employee_email").isEmail().withMessage("Please enter a valid email"),
   body("employee_password")
     .isLength({ min: 6 })

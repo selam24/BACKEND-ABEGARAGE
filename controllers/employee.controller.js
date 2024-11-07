@@ -1,9 +1,7 @@
 // controllers/employeeController.js
-// to handle the logic for registering a new employee in the system
-const employeeService = require("../services/employee.service"); // Import the employee service to handle business logic
 const validator = require("validator"); // Import validator for input sanitization
+const employeeService = require("../services/employee.service"); // Import the employee service
 
-// Define the registerEmployee function as an async function
 exports.registerEmployee = async (req, res) => {
   const {
     employee_first_name,
@@ -12,37 +10,55 @@ exports.registerEmployee = async (req, res) => {
     employee_email,
     employee_password,
     active_employee,
-    // Uncomment below if position and role are needed in future
-    // employee_position,
     employee_role,
   } = req.body;
 
-  // Input sanitization
-  // Sanitize and validate input data
-  // Sanitizing: Uses validator to escape harmful characters (like <>, etc.) from inputs that could lead to cross-site scripting (XSS) attacks. Specifically:escape: Removes harmful characters from first_name, last_name, and phone.
-  // normalizeEmail: Adjusts email to a standard format.
-  // The active_status field defaults to 1 (active) if active_employee isn’t provided.
+  // Type validation: Ensure that fields expected to be strings are strings
+  if (
+    typeof employee_first_name !== "string" ||
+    typeof employee_last_name !== "string" ||
+    typeof employee_phone !== "string" ||
+    typeof employee_email !== "string" ||
+    typeof employee_password !== "string"
+  ) {
+    // Throw a type error if any field has an unexpected type
+    const invalidType =
+      typeof req.body[
+        Object.keys(req.body).find(
+          (key) =>
+            typeof req.body[key] !== "string" &&
+            [
+              "employee_first_name",
+              "employee_last_name",
+              "employee_phone",
+              "employee_email",
+              "employee_password",
+            ].includes(key)
+        )
+      ];
+    throw new TypeError(
+      "Expected a string but received a ".concat(invalidType)
+    );
+  }
+
+  // Sanitize the employee data in the controller to avoid duplication
   const sanitizedData = {
-    first_name: validator.escape(employee_first_name),
+    first_name: validator.escape(employee_first_name), // Escape harmful characters
     last_name: validator.escape(employee_last_name),
     phone: validator.escape(employee_phone),
-    email: validator.normalizeEmail(employee_email),
+    email: validator.normalizeEmail(employee_email), // Normalize email
     password: employee_password, // Password will be hashed in the service, so no need to sanitize here
     active_status: active_employee !== undefined ? active_employee : 1, // Default to active (1) if not provided
-    // Uncomment below if position and role are needed in future
-    // position: employee_position,
-    role: employee_role,
+    role: employee_role || "employee", // Default to 'employee' if no role provided
   };
 
-  // Validation: Ensure all required fields are provided
+  // Validate: Ensure all required fields are provided
   if (
     !sanitizedData.first_name ||
     !sanitizedData.last_name ||
     !sanitizedData.phone ||
     !sanitizedData.email ||
     !sanitizedData.password ||
-    // Uncomment below if position and role are required
-    // !sanitizedData.position ||
     !sanitizedData.role
   ) {
     return res.status(400).json({
@@ -52,28 +68,22 @@ exports.registerEmployee = async (req, res) => {
   }
 
   try {
-    // Call the service to register the employee
-    // employeeService.registerEmployee: This function in employeeService handles the actual database operations, such as saving the employee’s data.
+    // Pass the sanitized data to the service
     const result = await employeeService.registerEmployee(sanitizedData);
 
-    // Prepare response data (excluding sensitive info like password)
-    // Response Data: Once the service successfully registers the employee, the code creates a responseData object with essential information (but omits the password for security).
-    // Assumes the service function returns an object with an insertId, representing the employee’s new database ID.
     const responseData = {
       id: result.insertId, // Assuming 'insertId' contains the new employee's ID from MySQL
       first_name: sanitizedData.first_name,
       last_name: sanitizedData.last_name,
       phone: sanitizedData.phone,
       email: sanitizedData.email,
-      active_status: sanitizedData.active_status, // Include active status in response
-      // Uncomment below if position and role are needed in future
-      // position: sanitizedData.position,
-      role: "employee", // Assuming a default role of 'employee' is assigned
+      active_status: sanitizedData.active_status,
+      role: sanitizedData.role,
     };
 
     res.status(201).json({
       message: "Employee created successfully",
-      success: true, // Changed to boolean for consistency
+      success: true,
       data: responseData,
     });
   } catch (error) {
@@ -85,13 +95,11 @@ exports.registerEmployee = async (req, res) => {
       });
     }
 
-    // Log the error for debugging, if necessary
+    // Log the error and send general server error
     console.error("Error registering employee:", error);
-
-    // Send a general server error response
     res.status(500).json({
       error: "Internal Server Error",
-      message: "An unexpected error occurred.",
+      message: error.message || "An unexpected error occurred.",
     });
   }
 };
