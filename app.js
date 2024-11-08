@@ -1,23 +1,21 @@
-// Import the express module
+// app.js
 const express = require("express");
-// Import the dotenv module and call the config method
-require("dotenv").config();
-// Import the cors module
+require("dotenv").config(); // Load environment variables from .env
 const cors = require("cors");
 
 // Create a variable to store the port number
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Default to 3000 if no PORT is set in .env
 
 // Create the web server
 const app = express();
 
-// Use the cors middleware
+// Use CORS middleware to allow cross-origin requests
 app.use(cors());
 
-// Use the express.json middleware to parse JSON requests
+// Use express.json middleware to parse JSON request bodies
 app.use(express.json());
 
-// Import routes
+// Import routes (ensure you have an employee.routes.js file)
 const employeeRoutes = require("./routes/employee.routes");
 
 // Use routes with a prefix (if needed)
